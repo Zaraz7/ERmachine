@@ -1,12 +1,13 @@
 object MainForm: TMainForm
-  Left = 1040
+  Left = 1052
   Height = 508
-  Top = 324
+  Top = 320
   Width = 581
   Caption = 'MainForm'
-  ClientHeight = 0
-  ClientWidth = 0
+  ClientHeight = 488
+  ClientWidth = 581
   Menu = MainMenu
+  OnActivate = FormActivate
   LCLVersion = '2.2.6.0'
   object ToolBar: TToolBar
     Left = 0
@@ -597,14 +598,14 @@ object MainForm: TMainForm
     TabOrder = 3
     object RegisterListEditor: TValueListEditor
       Left = 8
-      Height = 312
+      Height = 320
       Top = 0
       Width = 269
       Align = alRight
-      AutoEdit = False
       FixedCols = 0
       RowCount = 17
       TabOrder = 0
+      OnEditingDone = RegisterListEditorEditingDone
       OnKeyPress = RegisterListEditorKeyPress
       Strings.Strings = (
         '1=0'
@@ -635,12 +636,32 @@ object MainForm: TMainForm
     end
     object RegistersButton: TPanel
       Left = 0
-      Height = 50
-      Top = 312
+      Height = 42
+      Top = 320
       Width = 277
       Align = alBottom
       Caption = '0 - 15'
+      ClientHeight = 42
+      ClientWidth = 277
       TabOrder = 1
+      object PrevPageButton: TButton
+        Left = 8
+        Height = 25
+        Top = 8
+        Width = 27
+        Caption = '<'
+        OnClick = PrevPageButtonClick
+        TabOrder = 0
+      end
+      object NextPageButton: TButton
+        Left = 240
+        Height = 25
+        Top = 8
+        Width = 27
+        Caption = '>'
+        OnClick = NextPageButtonClick
+        TabOrder = 1
+      end
     end
   end
   object MainMenu: TMainMenu

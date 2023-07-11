@@ -7,6 +7,14 @@ interface
 uses
   Classes, SysUtils, ERunit;
 
+var
+  cu: ControlUnit;
+  code: ERcode;
+
+function LineParse(inputString: string): ERoperator;
+procedure Parse(var inputText: TStrings);
+
+
 implementation
 
 
@@ -23,8 +31,7 @@ var
   input: string;
   position: Integer;
   currentToken: Token;
-  cu: ControlUnit;
-  code: ERcode;
+
 
 procedure GetNextToken;
 begin

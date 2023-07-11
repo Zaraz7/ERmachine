@@ -22,6 +22,7 @@ type
     constructor Create;
     procedure setRegister(id: Integer; newValue: LongWord);
     function getRegister(id: Integer): LongWord;
+    function CountReg: Integer;
     {F+}
     procedure zeroReg(param: Fparameters);
     procedure incReg(param: Fparameters);
@@ -55,6 +56,12 @@ begin
   else
      Result:= registers[id];
 end;
+
+function ControlUnit.CountReg: Integer;
+begin
+  Result:= length(registers);
+end;
+
 {F+}
 procedure ControlUnit.zeroReg(param: Fparameters);
 begin
