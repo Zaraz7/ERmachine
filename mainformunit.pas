@@ -25,6 +25,8 @@ type
     InfoItem: TMenuItem;
     ERSyn: TSynAnySyn;
     MainTextEdit: TSynEdit;
+    RunTimer: TTimer;
+    UpdaterTimer: TTimer;
     ToolBar: TToolBar;
     RunTool: TToolButton;
     SeparatorTool: TToolButton;
@@ -34,10 +36,15 @@ type
     StepTool: TToolButton;
     RegisterListEditor: TValueListEditor;
     procedure FormActivate(Sender: TObject);
+    procedure LogListBoxClick(Sender: TObject);
     procedure NextPageButtonClick(Sender: TObject);
     procedure PrevPageButtonClick(Sender: TObject);
     procedure RegisterListEditorEditingDone(Sender: TObject);
     procedure RegisterListEditorKeyPress(Sender: TObject; var Key: char);
+    procedure RunTimerTimer(Sender: TObject);
+    procedure RunToolClick(Sender: TObject);
+    procedure StopToolClick(Sender: TObject);
+    procedure UpdaterTimerTimer(Sender: TObject);
   private
 
   public
@@ -51,6 +58,7 @@ implementation
 
 var
   page: Integer = 0;
+  notStop: Boolean;
   firstReg, lastReg: Integer;
 
 {$R *.lfm}
@@ -72,7 +80,7 @@ end;
 procedure UpdateRegister(id: Integer);
 begin
    if (id div 16) = page then
-      MainForm.RegisterListEditor.Cells[1,id mod page + 1]:= intToStr(cu.getRegister(id));
+      MainForm.RegisterListEditor.Cells[1,id mod 16+1]:= intToStr(cu.getRegister(id));
 end;
 
 procedure UpdatePageRegisters;
@@ -87,6 +95,23 @@ begin
    UpdateViewRegisters;
 end;
 
+procedure RunCode;
+begin
+  cu.Line:=0;
+  notStop:=True;
+  with MainForm do begin
+    UpdaterTimer.Enabled:=True;
+    RunTimer.Enabled:=True;
+
+    RunTool.Enabled:=False;
+    DebugTool.Enabled:=False;
+    StopTool.Enabled:=True;
+    PauseTool.Enabled:=True;
+  end;
+
+
+end;
+
 procedure TMainForm.RegisterListEditorKeyPress(Sender: TObject; var Key: char);
 begin
   case Key of
@@ -96,9 +121,50 @@ begin
   end;
 end;
 
+procedure TMainForm.RunTimerTimer(Sender: TObject);
+begin
+  if notStop and (cu.Line < length(code)) then
+     code[cu.Line].func(code[cu.Line].parameters)
+  else begin
+  with MainForm do begin
+    UpdaterTimer.Enabled:=False;
+    RunTimer.Enabled:=False;
+
+    RunTool.Enabled:=True;
+    DebugTool.Enabled:=True;
+    StopTool.Enabled:=False;
+    PauseTool.Enabled:=False;
+  end;
+
+
+     UpdateViewRegisters;
+  end;
+end;
+
+procedure TMainForm.RunToolClick(Sender: TObject);
+begin
+  Parse(MainForm.MainTextEdit.Lines);
+  RunCode;
+end;
+
+procedure TMainForm.StopToolClick(Sender: TObject);
+begin
+  notStop:=False;
+end;
+
+procedure TMainForm.UpdaterTimerTimer(Sender: TObject);
+begin
+  UpdateViewRegisters;
+end;
+
 procedure TMainForm.FormActivate(Sender: TObject);
 begin
   UpdatePageRegisters;
+end;
+
+procedure TMainForm.LogListBoxClick(Sender: TObject);
+begin
+
 end;
 
 procedure TMainForm.NextPageButtonClick(Sender: TObject);

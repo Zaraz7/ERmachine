@@ -7,8 +7,8 @@ uses
 
 type
   Uregisters = array of LongWord;
-  Fparameters = array of integer; // r1, r2, jumpLine
-  ERfunction = procedure(param: Fparameters) of object;
+  Fparameters = array of integer; // r1, r2, jumpLine : changed reg
+  ERfunction = function(param: Fparameters): Integer of object;
   ERoperator = record
     func: ERfunction;
     parameters: Fparameters;
@@ -24,11 +24,12 @@ type
     function getRegister(id: Integer): LongWord;
     function CountReg: Integer;
     {F+}
-    procedure zeroReg(param: Fparameters);
-    procedure incReg(param: Fparameters);
-    procedure copyReg(param: Fparameters);
-    procedure jumpTo(param: Fparameters);
+    function zeroReg(param: Fparameters): Integer;
+    function incReg(param: Fparameters): Integer;
+    function copyReg(param: Fparameters): Integer;
+    function jumpTo(param: Fparameters): Integer;
     {F-}
+    property Line: Integer read curLine write curLine;
   end;
 
 const
@@ -63,35 +64,39 @@ begin
 end;
 
 {F+}
-procedure ControlUnit.zeroReg(param: Fparameters);
+function ControlUnit.zeroReg(param: Fparameters): Integer;
 begin
   if high(registers) >= param[0] then
      registers[param[0]] := 0;
   inc(curLine);
+  Result:=param[0];
 end;
 
-procedure ControlUnit.incReg(param: Fparameters);
+function ControlUnit.incReg(param: Fparameters): Integer;
 begin
   if high(registers) < param[0] then
     setLength(registers, param[0]+1);
   registers[param[0]]:= registers[param[0]]+1;
   inc(curLine);
+  Result:=param[0];
 end;
 
-procedure ControlUnit.copyReg(param: Fparameters);
+function ControlUnit.copyReg(param: Fparameters): Integer;
 begin
   if high(registers) < param[1] then
     setLength(registers, param[1]+1);
   registers[param[1]] := getRegister(param[0]);
   inc(curLine);
+  Result:=param[1];
 end;
 
-procedure ControlUnit.jumpTo(param: Fparameters);
+function ControlUnit.jumpTo(param: Fparameters): Integer;
 begin
   if getRegister(param[0]) = getRegister(param[1]) then
-     curLine := param[2]
+     curLine := param[2]-1
   else
      inc(curLine);
+  Result:=0;
 end;
 {F-}
 //  //

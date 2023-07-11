@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 1052
+  Left = 1270
   Height = 508
-  Top = 320
+  Top = 239
   Width = 581
   Caption = 'MainForm'
   ClientHeight = 488
@@ -24,6 +24,7 @@ object MainForm: TMainForm
       Top = 2
       Caption = 'RunTool'
       ImageIndex = 0
+      OnClick = RunToolClick
     end
     object SeparatorTool: TToolButton
       Left = 70
@@ -36,7 +37,9 @@ object MainForm: TMainForm
       Left = 47
       Top = 2
       Caption = 'StopTool'
+      Enabled = False
       ImageIndex = 2
+      OnClick = StopToolClick
     end
     object DebugTool: TToolButton
       Left = 24
@@ -48,12 +51,14 @@ object MainForm: TMainForm
       Left = 78
       Top = 2
       Caption = 'PauseTool'
+      Enabled = False
       ImageIndex = 3
     end
     object StepTool: TToolButton
       Left = 101
       Top = 2
       Caption = 'StepTool'
+      Enabled = False
       ImageIndex = 4
     end
   end
@@ -571,19 +576,10 @@ object MainForm: TMainForm
     Width = 581
     Align = alBottom
     Items.Strings = (
-      'sd'
-      'cs'
-      'dc'
-      'asdc'
-      'asd'
-      'csa'
-      'dc'
-      'sd'
-      'c'
-      'asdcs'
-      'dc'
+      'LogList'
     )
     ItemHeight = 15
+    OnClick = LogListBoxClick
     TabOrder = 2
   end
   object RegisterBox: TGroupBox
@@ -713,5 +709,19 @@ object MainForm: TMainForm
     ActiveDot = False
     Left = 16
     Top = 240
+  end
+  object UpdaterTimer: TTimer
+    Enabled = False
+    Interval = 100
+    OnTimer = UpdaterTimerTimer
+    Left = 16
+    Top = 307
+  end
+  object RunTimer: TTimer
+    Enabled = False
+    Interval = 1
+    OnTimer = RunTimerTimer
+    Left = 26
+    Top = 366
   end
 end

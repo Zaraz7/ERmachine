@@ -12,14 +12,14 @@ var
   code: ERcode;
 
 function LineParse(inputString: string): ERoperator;
-procedure Parse(var inputText: TStrings);
+procedure Parse(inputText: TStrings);
 
 
 implementation
 
 
 type
-  TokenType = (Number, Zero, Sum, Copy, Jump, LParen, RParen, Comma, EndOfLine);
+  TokenType = (Number, Zero, Sum, Copy, Jump, LParen, RParen, Comma, EndOfLine, Unknown);
   Token = record
     TokenType: TokenType;
     Value: String;
@@ -29,7 +29,7 @@ type
 
 var
   input: string;
-  position: Integer;
+  position, line: Integer;
   currentToken: Token;
 
 
@@ -42,7 +42,7 @@ begin
     Exit;
   end;
 
-  while (input[position] = ' ') and (position > Length(input)) do
+  while (input[position] = ' ') and (position < Length(input)) do
         inc(position);
 
   case input[position] of
@@ -70,20 +70,19 @@ begin
            currentToken.TokenType := EndOfLine;
            currentToken.Value := input[position];
            Exit;
-         end
+         end;
+    '0'..'9': begin
+      currentToken.TokenType := Number;
+      currentToken.Value := '';
+      while (position <= Length(input)) and (input[position] in ['0'..'9']) do
+      begin
+        currentToken.Value := currentToken.Value + input[position];
+        Inc(position);
+      end;
+      Exit;
+    end
     else
-      if input[position] in ['0'..'9'] then
-        begin
-          currentToken.TokenType := Number;
-          currentToken.Value := '';
-          while (position <= Length(input)) and (input[position] in ['0'..'9']) do
-          begin
-            currentToken.Value := currentToken.Value + input[position];
-            Inc(position);
-          end;
-          Exit;
-        end
-      else
+      currentToken.TokenType := Unknown;
     end;
   currentToken.Value := input[position];
   Inc(position);
@@ -93,7 +92,7 @@ procedure Match(expectedTokenType: TokenType);
 var e: String;
 begin
   if currentToken.TokenType <> expectedTokenType then begin
-    e:='Синтаксическая ошибка: ожидалось ';
+    e:='('+intToStr(Line+1)+','+intToStr(position)+') Синтаксическая ошибка: ожидалось ';
     case expectedTokenType of
        Number: e:=e+'число';
        LParen: e:=e+'"("';
@@ -103,7 +102,7 @@ begin
     end;
     raise ERSyntaxError.Create(e+', а получено "'+currentToken.Value);
   end;
-  GetNextToken;
+  //GetNextToken;
 end;
 
 function LineParse(inputString: string): ERoperator;
@@ -146,19 +145,19 @@ begin
     GetNextToken;
     Match(Number);
     parameters[i]:=StrToInt(currentToken.Value);
-    Dec(i);
+    Inc(i);
   end;
   GetNextToken;
   Match(RParen);
   LineParse.parameters:=parameters;
 end;
 
-procedure Parse(var inputText: TStrings);
-var i: Integer;
+procedure Parse(inputText: TStrings);
+//var i: Integer;
 begin
   setLength(code, inputText.Count);
-  for i:=0 to inputText.Count-1 do
-     code[i]:= LineParse(inputText[i]);
+  for line:=0 to inputText.Count-1 do
+     code[line]:= LineParse(inputText[line]);
 end;
 
 begin
