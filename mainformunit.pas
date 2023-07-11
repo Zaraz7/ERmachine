@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, Menus,
   StdCtrls, PairSplitter, ComCtrls, ValEdit, SynHighlighterPas, SynEdit,
-  SynHighlighterAny;
+  SynHighlighterAny, ERunit, ERparser;
 
 type
 

@@ -8,59 +8,84 @@ uses
 type
   Uregisters = array of LongWord;
   Fparameters = array of integer; // r1, r2, jumpLine
-  ERfunction = procedure(param: Fparameters; var curLine: integer; regl: Uregisters);
+  ERfunction = procedure(param: Fparameters) of object;
   ERoperator = record
     func: ERfunction;
     parameters: Fparameters;
   end;
   ERcode = array of ERoperator;
-
+  ControlUnit = class
+  private
+    curLine: Integer;
+    registers: Uregisters;
+  public
+    constructor Create;
+    procedure setRegister(id: Integer; newValue: LongWord);
+    function getRegister(id: Integer): LongWord;
+    {F+}
+    procedure zeroReg(param: Fparameters);
+    procedure incReg(param: Fparameters);
+    procedure copyReg(param: Fparameters);
+    procedure jumpTo(param: Fparameters);
+    {F-}
+  end;
 
 const
   minRegHigh = 16;
 
-procedure initReg(var regl: Uregisters);
-{F+}
-procedure zeroReg(param: Fparameters; var curLine: integer; regl: Uregisters);
-procedure incReg(param: Fparameters; var curLine: integer; regl: Uregisters);
-procedure copyReg(param: Fparameters; var curLine: integer; regl: Uregisters);
-procedure jumpTo(param: Fparameters; var curLine: integer; regl: Uregisters);
-{F-}
-
 implementation
 
-procedure initReg(var regl: Uregisters);
+{ ControlUnit }
+constructor ControlUnit.Create;
 begin
-  setLength(regl, minRegHigh);
+  setLength(registers, minRegHigh);
 end;
 
+procedure ControlUnit.setRegister(id: Integer; newValue: LongWord);
+begin
+  if high(registers) < id then
+     setLength(registers, id+1);
+  registers[id]:= newValue;
+end;
+
+function ControlUnit.getRegister(id: Integer): LongWord;
+begin
+  if high(registers) < id then
+     Result:= 0
+  else
+     Result:= registers[id];
+end;
 {F+}
-procedure zeroReg(param: Fparameters; var curLine: integer; regl: Uregisters);
+procedure ControlUnit.zeroReg(param: Fparameters);
 begin
-  regl[param[0]] := 0;
+  if high(registers) >= param[0] then
+     registers[param[0]] := 0;
   inc(curLine);
 end;
 
-procedure incReg(param: Fparameters; var curLine: integer; regl: Uregisters);
+procedure ControlUnit.incReg(param: Fparameters);
 begin
-  regl[param[0]]:= regl[param[0]]+1;
+  if high(registers) < param[0] then
+    setLength(registers, param[0]+1);
+  registers[param[0]]:= registers[param[0]]+1;
   inc(curLine);
 end;
 
-procedure copyReg(param: Fparameters; var curLine: integer; regl: Uregisters);
+procedure ControlUnit.copyReg(param: Fparameters);
 begin
-  regl[param[1]] := regl[param[0]];
+  if high(registers) < param[1] then
+    setLength(registers, param[1]+1);
+  registers[param[1]] := getRegister(param[0]);
   inc(curLine);
 end;
 
-procedure jumpTo(param: Fparameters; var curLine: integer; regl: Uregisters);
+procedure ControlUnit.jumpTo(param: Fparameters);
 begin
-  if regl[param[0]] = regl[param[1]] then
+  if getRegister(param[0]) = getRegister(param[1]) then
      curLine := param[2]
   else
      inc(curLine);
 end;
 {F-}
-
+//  //
 end.
-

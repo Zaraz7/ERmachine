@@ -23,6 +23,8 @@ var
   input: string;
   position: Integer;
   currentToken: Token;
+  cu: ControlUnit;
+  code: ERcode;
 
 procedure GetNextToken;
 begin
@@ -104,26 +106,27 @@ begin
   input := inputString;
   position := 1;
   GetNextToken;
-  case currentToken.TokenType of
-     Zero: begin
-       setLength(parameters, 1);
-       LineParse.func := @zeroReg;
-       end;
-     Sum:  begin
-       setLength(parameters, 1);
-       LineParse.func := @incReg;
-       end;
-     Copy: begin
-       setLength(parameters, 2);
-       LineParse.func := @copyReg;
-       end;
-     Jump: begin
-       setLength(parameters, 3);
-       LineParse.func := @jumpTo;
-       end
-  else
-    raise ERIdentifierError.Create('Ошибка: неизвестный оператор "'+currentToken.Value+'"');
-  end;
+  with cu do
+    case currentToken.TokenType of
+       Zero: begin
+         setLength(parameters, 1);
+         LineParse.func := @zeroReg;
+         end;
+       Sum:  begin
+         setLength(parameters, 1);
+         LineParse.func := @incReg;
+         end;
+       Copy: begin
+         setLength(parameters, 2);
+         LineParse.func := @copyReg;
+         end;
+       Jump: begin
+         setLength(parameters, 3);
+         LineParse.func := @jumpTo;
+         end
+    else
+      raise ERIdentifierError.Create('Ошибка: неизвестный оператор "'+currentToken.Value+'"');
+    end;
   GetNextToken;
   Match(LParen);
   GetNextToken;
@@ -143,14 +146,16 @@ begin
   LineParse.parameters:=parameters;
 end;
 
-procedure Parse(var inputText: TStrings; var code: ERcode);
+procedure Parse(var inputText: TStrings);
 var i: Integer;
 begin
   setLength(code, inputText.Count);
   for i:=0 to inputText.Count-1 do
      code[i]:= LineParse(inputText[i]);
-
 end;
+
+begin
+  cu:= ControlUnit.Create;
 
 end.
 
