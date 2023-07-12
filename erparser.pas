@@ -13,7 +13,7 @@ var
 
 function LineParse(inputString: string): ERoperator;
 procedure Parse(inputText: TStrings);
-
+function GetSimpleLine(inputString: string): string;
 
 implementation
 
@@ -68,7 +68,7 @@ begin
 
     '/': begin
            currentToken.TokenType := EndOfLine;
-           currentToken.Value := input[position];
+           currentToken.Value := '';
            Exit;
          end;
     '0'..'9': begin
@@ -86,6 +86,20 @@ begin
     end;
   currentToken.Value := input[position];
   Inc(position);
+end;
+
+function GetSimpleLine(inputString: string): string;
+var output: String;
+begin
+  input := inputString;
+  position := 1;
+  GetNextToken;
+  output:=currentToken.Value;
+  while currentToken.TokenType <> EndOfLine do begin
+    GetNextToken;
+    output:=output+currentToken.Value;
+  end;
+  Result:=output;
 end;
 
 procedure Match(expectedTokenType: TokenType);

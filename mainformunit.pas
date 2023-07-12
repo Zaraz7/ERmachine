@@ -36,7 +36,6 @@ type
     StepTool: TToolButton;
     RegisterListEditor: TValueListEditor;
     procedure FormActivate(Sender: TObject);
-    procedure LogListBoxClick(Sender: TObject);
     procedure MainTextEditGutterClick(Sender: TObject; X, Y, Line: integer;
       mark: TSynEditMark);
     procedure NextPageButtonClick(Sender: TObject);
@@ -121,6 +120,7 @@ begin
     DebugTool.Enabled:=True;
     StopTool.Enabled:=False;
     PauseTool.Enabled:=False;
+    LogListBox.Items.Add('Машина остановлена.');
   end;
   UpdateViewRegisters;
 end;
@@ -145,8 +145,14 @@ end;
 
 procedure TMainForm.RunToolClick(Sender: TObject);
 begin
-  Parse(MainForm.MainTextEdit.Lines);
-  RunCode;
+  try
+    Parse(MainForm.MainTextEdit.Lines);
+    MainForm.LogListBox.Items.Add('Компиляция прошла успешно.');
+    RunCode;
+  except
+    on E : Exception do MainForm.LogListBox.Items.Add('Компиляция прервана: '+E.Message);
+  end;
+
 end;
 
 procedure TMainForm.StopToolClick(Sender: TObject);
@@ -164,10 +170,6 @@ begin
   UpdatePageRegisters;
 end;
 
-procedure TMainForm.LogListBoxClick(Sender: TObject);
-begin
-
-end;
 
 procedure TMainForm.MainTextEditGutterClick(Sender: TObject; X, Y,
   Line: integer; mark: TSynEditMark);

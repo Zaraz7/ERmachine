@@ -577,11 +577,7 @@ object MainForm: TMainForm
     Top = 408
     Width = 581
     Align = alBottom
-    Items.Strings = (
-      'LogList'
-    )
-    ItemHeight = 15
-    OnClick = LogListBoxClick
+    ItemHeight = 0
     TabOrder = 2
   end
   object RegisterBox: TGroupBox
