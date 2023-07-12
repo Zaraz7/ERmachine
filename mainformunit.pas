@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, Menus,
   StdCtrls, PairSplitter, ComCtrls, ValEdit, SynHighlighterPas, SynEdit,
-  SynHighlighterAny, ERunit, ERparser;
+  SynHighlighterAny, ERunit, ERparser, SynEditMarks, SynGutterBase;
 
 type
 
@@ -37,6 +37,8 @@ type
     RegisterListEditor: TValueListEditor;
     procedure FormActivate(Sender: TObject);
     procedure LogListBoxClick(Sender: TObject);
+    procedure MainTextEditGutterClick(Sender: TObject; X, Y, Line: integer;
+      mark: TSynEditMark);
     procedure NextPageButtonClick(Sender: TObject);
     procedure PrevPageButtonClick(Sender: TObject);
     procedure RegisterListEditorEditingDone(Sender: TObject);
@@ -98,7 +100,6 @@ end;
 procedure RunCode;
 begin
   cu.Line:=0;
-  notStop:=True;
   with MainForm do begin
     UpdaterTimer.Enabled:=True;
     RunTimer.Enabled:=True;
@@ -108,8 +109,20 @@ begin
     StopTool.Enabled:=True;
     PauseTool.Enabled:=True;
   end;
+end;
 
+procedure StopCode;
+begin
+  with MainForm do begin
+    UpdaterTimer.Enabled:=False;
+    RunTimer.Enabled:=False;
 
+    RunTool.Enabled:=True;
+    DebugTool.Enabled:=True;
+    StopTool.Enabled:=False;
+    PauseTool.Enabled:=False;
+  end;
+  UpdateViewRegisters;
 end;
 
 procedure TMainForm.RegisterListEditorKeyPress(Sender: TObject; var Key: char);
@@ -123,21 +136,10 @@ end;
 
 procedure TMainForm.RunTimerTimer(Sender: TObject);
 begin
-  if notStop and (cu.Line < length(code)) then
+  if cu.Line < length(code) then
      code[cu.Line].func(code[cu.Line].parameters)
   else begin
-  with MainForm do begin
-    UpdaterTimer.Enabled:=False;
-    RunTimer.Enabled:=False;
-
-    RunTool.Enabled:=True;
-    DebugTool.Enabled:=True;
-    StopTool.Enabled:=False;
-    PauseTool.Enabled:=False;
-  end;
-
-
-     UpdateViewRegisters;
+    StopCode;
   end;
 end;
 
@@ -149,7 +151,7 @@ end;
 
 procedure TMainForm.StopToolClick(Sender: TObject);
 begin
-  notStop:=False;
+  StopCode;
 end;
 
 procedure TMainForm.UpdaterTimerTimer(Sender: TObject);
@@ -166,6 +168,30 @@ procedure TMainForm.LogListBoxClick(Sender: TObject);
 begin
 
 end;
+
+procedure TMainForm.MainTextEditGutterClick(Sender: TObject; X, Y,
+  Line: integer; mark: TSynEditMark);
+var m: TSynEditMark;
+  i: integer;
+begin
+  for i:=0 to MainTextEdit.Marks.Count-1 do
+      if MainTextEdit.Marks.Items[i].Line = Line then begin
+      MainTextEdit.Marks.Items[i].Visible:=False;
+      MainTextEdit.Marks.Delete(i);
+          exit;
+      end;
+
+
+  m:=TSynEditMark.Create(MainTextEdit);
+  m.Line:=Line;
+  m.ImageList := IconList;
+  m.ImageIndex := 3;
+  m.Visible := true;
+  MainTextEdit.Marks.Add(m);
+  //showMessage(IntToStr(MainTextEdit.Marks.Count)+' '+IntToStr(MainTextEdit.Marks.Items[0].Line));
+end;
+
+
 
 procedure TMainForm.NextPageButtonClick(Sender: TObject);
 begin

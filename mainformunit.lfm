@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 1270
+  Left = 1295
   Height = 508
-  Top = 239
+  Top = 300
   Width = 581
   Caption = 'MainForm'
   ClientHeight = 488
@@ -78,6 +78,7 @@ object MainForm: TMainForm
     ParentColor = False
     ParentFont = False
     TabOrder = 1
+    BookMarkOptions.BookmarkImages = IconList
     Gutter.Width = 59
     Gutter.MouseActions = <>
     RightGutter.Width = 0
@@ -533,6 +534,7 @@ object MainForm: TMainForm
     MouseLinkColor.Foreground = clBlue
     LineHighlightColor.Background = clNone
     LineHighlightColor.Foreground = clNone
+    OnGutterClick = MainTextEditGutterClick
     inline SynLeftGutterPartList1: TSynGutterPartList
       object SynGutterMarks1: TSynGutterMarks
         Width = 24
