@@ -14,6 +14,8 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    ExitItem: TMenuItem;
+    SaveItem: TMenuItem;
     NextPageButton: TButton;
     PrevPageButton: TButton;
     RegistersButton: TPanel;
@@ -26,6 +28,7 @@ type
     ERSyn: TSynAnySyn;
     MainTextEdit: TSynEdit;
     RunTimer: TTimer;
+    DebugTimer: TTimer;
     UpdaterTimer: TTimer;
     ToolBar: TToolBar;
     RunTool: TToolButton;
@@ -35,7 +38,10 @@ type
     DebugTool: TToolButton;
     StepTool: TToolButton;
     RegisterListEditor: TValueListEditor;
+    procedure DebugTimerTimer(Sender: TObject);
     procedure FormActivate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure MainTextEditChange(Sender: TObject);
     procedure MainTextEditGutterClick(Sender: TObject; X, Y, Line: integer;
       mark: TSynEditMark);
     procedure NextPageButtonClick(Sender: TObject);
@@ -44,6 +50,7 @@ type
     procedure RegisterListEditorKeyPress(Sender: TObject; var Key: char);
     procedure RunTimerTimer(Sender: TObject);
     procedure RunToolClick(Sender: TObject);
+    procedure SaveItemClick(Sender: TObject);
     procedure StopToolClick(Sender: TObject);
     procedure UpdaterTimerTimer(Sender: TObject);
   private
@@ -57,12 +64,30 @@ var
 
 implementation
 
+const
+  TemplateDir = 'templates';
+  TemplateFileName = 'test.er';
+  RegistersFileName = 'registers';
+
 var
   page: Integer = 0;
-  notStop: Boolean;
+  Pause, ChangedFile: Boolean;
   firstReg, lastReg: Integer;
+  ProjectDir: String = TemplateDir;
+  FileName: String = TemplateFileName;
+  registersFile: File of LongWord;
 
 {$R *.lfm}
+
+function FullFileName: String;
+begin
+   Result:= ProjectDir+PathDelim+FileName;
+end;
+
+function FullRegistersFileName: String;
+begin
+   Result:= ProjectDir+PathDelim+RegistersFileName;
+end;
 
 { TMainForm }
 
@@ -96,6 +121,56 @@ begin
    UpdateViewRegisters;
 end;
 
+procedure SaveRegisters;
+var i: Integer;
+begin
+   cu.Optimize;
+   assign(registersFile, FullRegistersFileName);
+   rewrite(registersFile);
+   for i:=0 to cu.CountReg-1 do
+       write(registersFile, cu.getRegister(i));
+   close(registersFile);
+end;
+
+procedure OpenRegisters;
+var i: Integer;
+    inp: LongWord;
+begin
+  if not FileExists(FullRegistersFileName) then begin
+      exit;
+   end;
+  assign(registersFile, FullRegistersFileName);
+   reset(registersFile);
+   cu.SetLen(System.FileSize(registersFile));
+   for i:=0 to cu.CountReg-1 do begin
+       read(registersFile, inp);
+       cu.setRegister(i, inp);
+   end;
+   close(registersFile);
+   UpdatePageRegisters;
+end;
+
+function SaveFile: boolean;
+begin
+  try
+    MainForm.MainTextEdit.Lines.SaveToFile(FullFileName);
+    ChangedFile := False;
+    SaveRegisters;
+  except
+    on E : Exception do begin
+      ShowMessage('Ошибка сохранения файла!'+LineEnding+E.Message);
+      SaveFile := False;
+    end;
+  end;
+end;
+
+procedure OpenFile;
+begin
+  MainForm.MainTextEdit.Lines.LoadFromFile(FullFileName);
+  ChangedFile := False;
+  OpenRegisters;
+end;
+
 procedure RunCode;
 begin
   cu.Line:=0;
@@ -107,6 +182,7 @@ begin
     DebugTool.Enabled:=False;
     StopTool.Enabled:=True;
     PauseTool.Enabled:=True;
+    RegisterBox.Enabled:=False;
   end;
 end;
 
@@ -120,9 +196,16 @@ begin
     DebugTool.Enabled:=True;
     StopTool.Enabled:=False;
     PauseTool.Enabled:=False;
+    RegisterBox.Enabled:=True;
+    cu.Line:=0;
     LogListBox.Items.Add('Машина остановлена.');
   end;
   UpdateViewRegisters;
+end;
+
+function StepCode: Integer;
+begin
+  Result:= code[cu.Line].func(code[cu.Line].parameters);
 end;
 
 procedure TMainForm.RegisterListEditorKeyPress(Sender: TObject; var Key: char);
@@ -137,7 +220,24 @@ end;
 procedure TMainForm.RunTimerTimer(Sender: TObject);
 begin
   if cu.Line < length(code) then
-     code[cu.Line].func(code[cu.Line].parameters)
+     StepCode
+  else begin
+    StopCode;
+  end;
+end;
+
+procedure TMainForm.DebugTimerTimer(Sender: TObject);
+begin
+  if Pause then
+    with MainForm do begin
+      DebugTimer.Enabled:=False;
+      DebugTool.Enabled:=True;
+      StepTool.Enabled:=True;
+      exit;
+    end;
+
+  if cu.Line < length(code) then
+     StepCode
   else begin
     StopCode;
   end;
@@ -155,6 +255,11 @@ begin
 
 end;
 
+procedure TMainForm.SaveItemClick(Sender: TObject);
+begin
+  SaveFile;
+end;
+
 procedure TMainForm.StopToolClick(Sender: TObject);
 begin
   StopCode;
@@ -170,6 +275,20 @@ begin
   UpdatePageRegisters;
 end;
 
+procedure TMainForm.FormShow(Sender: TObject);
+begin
+  with MainForm do begin
+    DebugTool.Visible:=False;
+    PauseTool.Visible:=False;
+  end;
+  OpenFile;
+end;
+
+procedure TMainForm.MainTextEditChange(Sender: TObject);
+begin
+
+end;
+
 
 procedure TMainForm.MainTextEditGutterClick(Sender: TObject; X, Y,
   Line: integer; mark: TSynEditMark);
@@ -177,12 +296,11 @@ var m: TSynEditMark;
   i: integer;
 begin
   for i:=0 to MainTextEdit.Marks.Count-1 do
-      if MainTextEdit.Marks.Items[i].Line = Line then begin
+    if MainTextEdit.Marks.Items[i].Line = Line then begin
       MainTextEdit.Marks.Items[i].Visible:=False;
       MainTextEdit.Marks.Delete(i);
-          exit;
-      end;
-
+      exit;
+    end;
 
   m:=TSynEditMark.Create(MainTextEdit);
   m.Line:=Line;
@@ -213,6 +331,7 @@ begin
     if Cells[Col,Row] = '' then
        Cells[Col,Row]:= '0';
     cu.setRegister(firstReg+Row-1, strToInt(Cells[Col,Row]));
+    ChangedFile := True;
   end;
 end;
 

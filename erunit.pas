@@ -23,6 +23,8 @@ type
     procedure setRegister(id: Integer; newValue: LongWord);
     function getRegister(id: Integer): LongWord;
     function CountReg: Integer;
+    procedure Optimize;
+    procedure SetLen(l: Integer);
     {F+}
     function zeroReg(param: Fparameters): Integer;
     function incReg(param: Fparameters): Integer;
@@ -61,6 +63,20 @@ end;
 function ControlUnit.CountReg: Integer;
 begin
   Result:= length(registers);
+end;
+
+procedure ControlUnit.Optimize;
+var i: Integer;
+begin
+  i:=high(registers);
+  while registers[i] = 0 do
+        dec(i);
+  setLength(registers, i+1);
+end;
+
+procedure ControlUnit.SetLen(l: Integer);
+begin
+  setLength(registers, l);
 end;
 
 {F+}

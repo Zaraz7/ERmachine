@@ -145,7 +145,7 @@ begin
          LineParse.func := @jumpTo;
          end
     else
-      raise ERIdentifierError.Create('Ошибка: неизвестный оператор "'+currentToken.Value+'"');
+      raise ERIdentifierError.Create('('+intToStr(Line+1)+','+intToStr(position)+') Ошибка: неизвестный оператор "'+currentToken.Value+'"');
     end;
   GetNextToken;
   Match(LParen);
