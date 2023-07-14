@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, Menus,
   StdCtrls, PairSplitter, ComCtrls, ValEdit, SynHighlighterPas, SynEdit,
-  SynHighlighterAny, ERunit, ERparser, SynEditMarks, SynGutterBase;
+  SynHighlighterAny, ERunit, ERparser, SynEditMarks, SynGutterBase, blankUnit;
 
 type
 
@@ -39,8 +39,10 @@ type
     StepTool: TToolButton;
     RegisterListEditor: TValueListEditor;
     procedure DebugTimerTimer(Sender: TObject);
+    procedure ExitItemClick(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure InfoItemClick(Sender: TObject);
     procedure MainTextEditChange(Sender: TObject);
     procedure MainTextEditGutterClick(Sender: TObject; X, Y, Line: integer;
       mark: TSynEditMark);
@@ -243,6 +245,11 @@ begin
   end;
 end;
 
+procedure TMainForm.ExitItemClick(Sender: TObject);
+begin
+  Close;
+end;
+
 procedure TMainForm.RunToolClick(Sender: TObject);
 begin
   try
@@ -284,9 +291,14 @@ begin
   OpenFile;
 end;
 
+procedure TMainForm.InfoItemClick(Sender: TObject);
+begin
+  BlankFrame.Show;
+end;
+
 procedure TMainForm.MainTextEditChange(Sender: TObject);
 begin
-
+  ChangedFile:=True;
 end;
 
 

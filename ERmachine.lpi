@@ -55,6 +55,13 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="ERparser"/>
       </Unit>
+      <Unit>
+        <Filename Value="blankunit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="BlankFrame"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="blankUnit"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

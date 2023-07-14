@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 271
+  Left = 80
   Height = 508
-  Top = 348
+  Top = 218
   Width = 581
   Caption = 'ER-machine'
   ClientHeight = 488
@@ -824,10 +824,12 @@ object MainForm: TMainForm
       end
       object ExitItem: TMenuItem
         Caption = 'Выход'
+        OnClick = ExitItemClick
       end
     end
     object InfoItem: TMenuItem
       Caption = 'Справка'
+      OnClick = InfoItemClick
     end
   end
   object IconList: TImageList
